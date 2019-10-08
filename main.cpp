@@ -1,4 +1,3 @@
-//#define _WIN32_WINNT 0x0A00
 #define CONFIG_PATH "config.cfg"
 
 #include "strmanip.h"
@@ -341,23 +340,6 @@ void roblox_script()
 
             mouse_event(map_mouse[(mouse_commands_map["mouse_right"] == "true" ? "mouse_right_down" : "mouse_absolute")], 
                         NULL, NULL, NULL, NULL);
-            
-           /*
-           try
-           {
-                hThread = GetWindowThreadProcessId(hwnd, & dwPID);  
-                if ( hThread!= NULL ) {
-                cout << "MSG: " << PostThreadMessage( hThread, WM_KEYDOWN,'A',1) << endl;
-                }
-
-                cout << hwnd << " -- " << dwPID << endl;
-           }
-           catch(const std::exception& e)
-           {
-               write("log", e.what() + '\n', "app");
-           }
-           */
-           
         }
 
         if( mouse_commands_map["mouse_click"] == "true" )
