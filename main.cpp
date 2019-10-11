@@ -349,7 +349,7 @@ void roblox_script()
                         NULL, NULL, NULL, NULL);
 
             mouse_event(map_mouse[(mouse_commands_map["mouse_right"] == "true" ? "mouse_right_down" : "mouse_absolute")] | 
-                        map_mouse[(mouse_commands_map["mouse_left"] == "true" ? "mouse_right_up" : "mouse_absolute")], 
+                        map_mouse[(mouse_commands_map["mouse_right"] == "true" ? "mouse_right_up" : "mouse_absolute")], 
                         NULL, NULL, NULL, NULL);
         }
     }
