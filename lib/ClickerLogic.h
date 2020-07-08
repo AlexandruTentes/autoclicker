@@ -4,6 +4,7 @@
 #include "strmanip.h"
 #include <windows.h>
 #include <map>
+#include <thread>
 
 class ClickerLogic
 {
@@ -43,6 +44,10 @@ class ClickerLogic
         //The base functions
         void read_configs();
         void app();
+        void app_preset_load();
+        void app_preset_unload();
+        void app_preset_play();
+        void app_preset_record();
         void getCurrentWindowHandler();
         void getWindow(int index);
         void checkForWindowInStore();

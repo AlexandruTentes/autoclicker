@@ -85,6 +85,60 @@ void ClickerLogic::getCurrentWindowHandler()
     }
 }
 
+//------------------------------------------------------//
+//--- This function prepares the key recording logic ---//
+//------------------------------------------------------//
+
+void read_keys()
+{
+    std::thread read_keys_thread(read_keys_callback);
+}
+
+//-------------------------------//
+//--- Thread callback function---//
+//-------------------------------//
+
+auto read_keys_callback()
+{
+
+}
+
+//----------------------------------------------//
+//--- This function loads the preset feature ---//
+//----------------------------------------------//
+
+void ClickerLogic::app_preset_load()
+{
+
+}
+
+//------------------------------------------------//
+//--- This function unloads the preset feature ---//
+//------------------------------------------------//
+
+void ClickerLogic::app_preset_unload()
+{
+
+}
+
+//-------------------------------------------//
+//--- This function plays the preset file ---//
+//-------------------------------------------//
+
+void ClickerLogic::app_preset_play()
+{
+
+}
+
+//----------------------------------------//
+//--- This function records a new file ---//
+//----------------------------------------//
+
+void ClickerLogic::app_preset_record()
+{
+
+}
+
 //--------------------------------------------------------------------//
 //--- This function checks if the selected window is known already ---//
 //--------------------------------------------------------------------//
