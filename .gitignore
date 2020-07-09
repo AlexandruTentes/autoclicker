@@ -8,3 +8,7 @@ test.cpp
 autoclicker.exe
 
 .vscode/settings.json
+
+log
+
+preset/load
