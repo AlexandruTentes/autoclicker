@@ -11,6 +11,36 @@ string_manipulation::Array<std::string> macro;
 string_manipulation::Array<std::string> mouse_poz;
 string_manipulation::Array<std::string> possitions;
 
+std::string mouse_pos_row = "";
+std::string mouse_left_right_click_row = "";
+
+void ClickerLogic::refocus()
+{
+    loop_in_app_wait:
+
+    //Waits for the user to refocus on the desired window
+    if(GetForegroundWindow() != ClickerLogic::hwnd)
+    {
+        Sleep(10);
+        goto loop_in_app_wait;
+    }
+
+    // Recalculate the window dimensions when refocusing
+    GetClientRect(ClickerLogic::hwnd, &(ClickerLogic::rect));
+    ClickerLogic::width = ClickerLogic::rect.right;
+    ClickerLogic::height = ClickerLogic::rect.bottom;
+    GetWindowRect(ClickerLogic::hwnd, &(ClickerLogic::rect));
+
+    //SetWindowPos puts the window at top of the others
+    SetWindowPos(ClickerLogic::hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+    SetWindowPos(ClickerLogic::hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+    //SetForegroundWindow sets the focus to the window
+    SetForegroundWindow(ClickerLogic::hwnd);
+}
+
 //-----------------------------------------------------------//
 //--- This function is a loop which executes the 'script' ---//
 //--- It sends certain key inputs to the specified window ---//
@@ -24,32 +54,7 @@ void ClickerLogic::app()
     if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_F7))
         return;
 
-    //Waits for the user to refocus on the desired window
-    if(GetForegroundWindow() != ClickerLogic::hwnd)
-    {
-        ClickerLogic::setCursorCoordsOnlyOnce = false;
-        Sleep(10);
-        goto loop_in_app;
-    }
-
-    if(!ClickerLogic::setCursorCoordsOnlyOnce)
-    {
-        GetWindowRect(ClickerLogic::hwnd, &(ClickerLogic::rect));
-        ClickerLogic::width = ClickerLogic::rect.right - ClickerLogic::rect.left;
-        ClickerLogic::height = ClickerLogic::rect.bottom - ClickerLogic::rect.top;
-
-        SetCursorPos(ClickerLogic::rect.left + ClickerLogic::width / 2, ClickerLogic::rect.top + ClickerLogic::height / 2);
-        ClickerLogic::setCursorCoordsOnlyOnce = true;
-    }
-
-    //SetWindowPos puts the window at top of the others
-    SetWindowPos(ClickerLogic::hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-                 SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-    SetWindowPos(ClickerLogic::hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
-                 SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-
-    //SetForegroundWindow sets the focus to the window
-    SetForegroundWindow(ClickerLogic::hwnd);
+    ClickerLogic::refocus();
 
     //Place the game script down here
     ClickerLogic::clicker();
@@ -72,9 +77,13 @@ void ClickerLogic::getCurrentWindowHandler()
         GetWindowTextA(ClickerLogic::hwnd, ClickerLogic::title, sizeof(ClickerLogic::title));
 
         //Get the dimensions of the focused window;
+        GetClientRect(ClickerLogic::hwnd, &(ClickerLogic::rect));
+        ClickerLogic::width = ClickerLogic::rect.right;
+        ClickerLogic::height = ClickerLogic::rect.bottom;
         GetWindowRect(ClickerLogic::hwnd, &(ClickerLogic::rect));
-        ClickerLogic::width = ClickerLogic::rect.right - ClickerLogic::rect.left;
-        ClickerLogic::height = ClickerLogic::rect.bottom - ClickerLogic::rect.top;
+
+        cout << "x: " << ClickerLogic::rect.right - ClickerLogic::rect.left << "---" << ClickerLogic::width << endl;
+        cout << "y: " << ClickerLogic::rect.bottom - ClickerLogic::rect.top << "---" << ClickerLogic::height << endl;
 
         ClickerLogic::lastFocusedWindow = char_to_string(ClickerLogic::title);
         ClickerLogic::checkForWindowInStore();
@@ -91,14 +100,14 @@ void ClickerLogic::getCurrentWindowHandler()
 
 void read_keys()
 {
-    std::thread read_keys_thread(read_keys_callback);
+    //mingw_stdthread::thread read_keys_thread(read_keys_callback);
 }
 
 //-------------------------------//
 //--- Thread callback function---//
 //-------------------------------//
 
-auto read_keys_callback()
+void read_keys_callback()
 {
 
 }
@@ -109,7 +118,39 @@ auto read_keys_callback()
 
 void ClickerLogic::app_preset_load()
 {
+    try
+    {
+        std::string test = read("preset\\load", "|", 1);
 
+        string_manipulation::Array<std::string> mouze = split(test, '-');
+        string_manipulation::Array<std::string> mouze_poz = split(mouze.array[0], ';');
+        string_manipulation::Array<std::string> mouze_click = split(mouze.array[1], ';');
+        string_manipulation::Array<std::string> mouze_poz_xy;
+        string_manipulation::Array<std::string> mouze_click_lr;
+
+        for(int i = 0; i < mouze_poz.size; i++)
+        {
+            mouze_poz_xy = split(mouze_poz.array[i], ',');
+            mouze_click_lr = split(mouze_click.array[i], ',');
+
+            ClickerLogic::mouse_load[i].x = std::stol(mouze_poz_xy.array[0]);
+            ClickerLogic::mouse_load[i].y = std::stol(mouze_poz_xy.array[1]);
+            ClickerLogic::mouse_event_load_left[i] = std::stoi(mouze_click_lr.array[0]);
+            ClickerLogic::mouse_event_load_right[i] = std::stoi(mouze_click_lr.array[1]);
+        }
+
+        for(int i = mouze_poz.size; i < ClickerLogic::max_size; i++)
+        {
+            ClickerLogic::mouse_load[i].x = -1;
+            ClickerLogic::mouse_load[i].y = -1;
+            ClickerLogic::mouse_event_load_left[i] = -1;
+            ClickerLogic::mouse_event_load_right[i] = -1;
+        }
+    }
+    catch(const std::exception& e)
+    {
+        write("log", e.what(), "app", true);
+    }
 }
 
 //------------------------------------------------//
@@ -121,13 +162,81 @@ void ClickerLogic::app_preset_unload()
 
 }
 
-//-------------------------------------------//
-//--- This function plays the preset file ---//
-//-------------------------------------------//
+//----------------------------------------------------------------------------------//
+//--- This function plays the preset file with applied data smoothing algorithms ---//
+//----------------------------------------------------------------------------------//
+
+void ClickerLogic::smoothing(std::string mode)
+{
+    try
+    {
+        int i = 0, j = 0, k = 0;
+        ClickerLogic::mouse_smooth[0].x = ClickerLogic::mouse_load[0].x;
+        ClickerLogic::mouse_smooth[0].y = ClickerLogic::mouse_load[0].y;
+
+        loop_smoothing:
+
+        //Return back to main
+        if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_F7))
+            return;
+
+        ClickerLogic::refocus();
+
+        if(i >= ClickerLogic::max_size || j >= ClickerLogic::max_size * 2 || ClickerLogic::mouse_load[i].x == -1)
+            return;
+
+        if(mode == "untouched")
+        {
+            if(i + 1 >= ClickerLogic::max_size || ClickerLogic::mouse_load[i + 1].x == -1) 
+                return;
+
+            ClickerLogic::mouse_smooth[i + 1].x = ClickerLogic::mouse_load[i + 1].x;
+            ClickerLogic::mouse_smooth[i + 1].y = ClickerLogic::mouse_load[i + 1].y;
+
+            i++;
+        }
+        else if(mode == "1to1average_oversampling")
+        {
+            if(j + 2 >= ClickerLogic::max_size * 2 || i + 2 >=  ClickerLogic::max_size || ClickerLogic::mouse_load[i + 2].x == -1) 
+                return;
+
+            ClickerLogic::mouse_smooth[j + 1].x = (ClickerLogic::mouse_load[i].x + ClickerLogic::mouse_load[i + 1].x) / 2;
+            ClickerLogic::mouse_smooth[j + 1].y = (ClickerLogic::mouse_load[i].y + ClickerLogic::mouse_load[i + 1].y) / 2;
+
+            j++;
+            i++;
+        }
+
+        SetCursorPos(ClickerLogic::rect.left + (double) ((double)  ClickerLogic::mouse_smooth[k].x / ClickerLogic::mouse_accuracy) * ClickerLogic::width,
+                    ClickerLogic::rect.top + (double) ((double)  ClickerLogic::mouse_smooth[k].y / ClickerLogic::mouse_accuracy) * ClickerLogic::height);
+
+        mouse_event((ClickerLogic::mouse_event_load_left[k] == 0 ? MOUSEEVENTF_ABSOLUTE : ClickerLogic::mouse_event_load_left[k]) | 
+                    (ClickerLogic::mouse_event_load_right[k] == 0 ? MOUSEEVENTF_ABSOLUTE : ClickerLogic::mouse_event_load_right[k]), 
+                            NULL, NULL, NULL, NULL);
+
+        k++;
+        Sleep(5);
+        goto loop_smoothing;
+    }
+    catch(const std::exception& e)
+    {
+        write("log", e.what(), "app", true);
+    }
+}
+
+//------------------------------------------------------//
+//--- This function prepares to play the preset file ---//
+//------------------------------------------------------//
 
 void ClickerLogic::app_preset_play()
 {
+    smoothing("1to1average_oversampling");
 
+    mouse_event(MOUSEEVENTF_LEFTUP, 
+                NULL, NULL, NULL, NULL);
+
+    mouse_event(MOUSEEVENTF_RIGHTUP, 
+                NULL, NULL, NULL, NULL); 
 }
 
 //----------------------------------------//
@@ -136,7 +245,82 @@ void ClickerLogic::app_preset_play()
 
 void ClickerLogic::app_preset_record()
 {
+    try
+    {
+        POINT mouse;
+        POINT mouse_previous;
+        bool stop = false;
+        
+        int i = 0;
+        cout << "check" << endl;
+        mouse_previous.x = -1;
+        mouse_previous.y = -1;
 
+        double fullscreen_client_ratio_x = (double) (ClickerLogic::rect.right - ClickerLogic::rect.left) / ClickerLogic::width;
+        double fullscreen_client_ratio_y = (double) (ClickerLogic::rect.bottom - ClickerLogic::rect.top) / ClickerLogic::height;
+
+        loop_in_app_preset_record:
+
+        //Return back to main
+        if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_F7))
+        {
+            write("preset\\load", "|\n" +  mouse_pos_row + "-" + mouse_left_right_click_row, "app", true);
+            return;
+        }
+
+        if(i >= ClickerLogic::max_size)
+        {
+            write("preset\\load", "|\n" +  mouse_pos_row + "-" + mouse_left_right_click_row, "app", true);
+            i = 0;
+        }
+
+        ClickerLogic::refocus();
+
+        if(ClickerLogic::hwnd == NULL) return;
+
+        GetCursorPos(&mouse);
+        ScreenToClient(ClickerLogic::hwnd, &mouse);
+        
+        if(mouse.x >= 0 && mouse.x <= ClickerLogic::width &&
+           mouse.y >= 0 && mouse.y <= ClickerLogic::height)
+        {
+            mouse_previous.x = mouse.x;
+            mouse_previous.y = mouse.y;
+
+            ClickerLogic::mouse_mod[i].x = (int) ((double) ((double) (mouse.x * fullscreen_client_ratio_x) / ClickerLogic::width) * ClickerLogic::mouse_accuracy);
+            ClickerLogic::mouse_mod[i].y = (int) ((double) ((double) (mouse.y) / ClickerLogic::height) * ClickerLogic::mouse_accuracy);
+
+            cout << ClickerLogic::mouse_mod[i].x << " --- " << ClickerLogic::mouse_mod[i].y << " size: " << i << endl;
+
+            if (GetAsyncKeyState(VK_LBUTTON) < 0)
+                ClickerLogic::mouse_event_left[i] = MOUSEEVENTF_LEFTDOWN;
+            else if( i > 0 && (ClickerLogic::mouse_event_left[i - 1] == MOUSEEVENTF_LEFTUP || ClickerLogic::mouse_event_left[i - 1] == MOUSEEVENTF_ABSOLUTE))
+                ClickerLogic::mouse_event_left[i] = 0;
+            else
+                ClickerLogic::mouse_event_left[i] = MOUSEEVENTF_LEFTUP;
+
+            if (GetAsyncKeyState(VK_RBUTTON) < 0)
+                ClickerLogic::mouse_event_right[i] = MOUSEEVENTF_RIGHTDOWN;
+            else if(i > 0 && (ClickerLogic::mouse_event_right[i - 1] == MOUSEEVENTF_RIGHTUP || ClickerLogic::mouse_event_right[i - 1] == MOUSEEVENTF_ABSOLUTE))
+                ClickerLogic::mouse_event_right[i] = 0;
+            else
+                ClickerLogic::mouse_event_right[i] = MOUSEEVENTF_RIGHTUP;
+
+            mouse_pos_row += std::to_string(ClickerLogic::mouse_mod[i].x) + "," + std::to_string(ClickerLogic::mouse_mod[i].y) + ";";
+            mouse_left_right_click_row += std::to_string(ClickerLogic::mouse_event_left[i]) + "," + std::to_string(ClickerLogic::mouse_event_right[i]) + ";";
+
+            i++;
+        }
+
+        ClickerLogic::mouse_mod_size = i;
+
+        Sleep(ClickerLogic::mouse_record_delay);
+        goto loop_in_app_preset_record;
+    }
+    catch(const std::exception& e)
+    {
+        write("log", e.what(), "app", true);
+    }
 }
 
 //--------------------------------------------------------------------//
@@ -302,10 +486,6 @@ void ClickerLogic::clicker()
 
 void ClickerLogic::change_mouse_pos(string mode)
 {
-    GetWindowRect(ClickerLogic::hwnd, &(ClickerLogic::rect));
-    ClickerLogic::width = ClickerLogic::rect.right - ClickerLogic::rect.left;
-    ClickerLogic::height = ClickerLogic::rect.bottom - ClickerLogic::rect.top;
-
     mouse_poz.clear();
     possitions.clear();
 

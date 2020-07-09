@@ -59,7 +59,9 @@ namespace string_manipulation
 
         void set_addr(Array<T> * addr)
         {
-            delete Array::addr;
+            if(Array::addr != nullptr && Array::addr != NULL)
+                delete Array::addr;
+
             Array::addr = addr;
         }
 
@@ -116,12 +118,18 @@ namespace string_manipulation
 
         void clear()
         {
-            delete addr;
+            if(addr != nullptr && addr != NULL)
+                delete addr;
+
+            addr = nullptr;
         }
 
         ~Array()
         {
-            delete [] array;
+            if(array != nullptr && array != NULL)
+                delete [] array;
+
+            array = nullptr;
         }
     };
 
@@ -187,6 +195,7 @@ namespace string_manipulation
     //
 
     extern std::string read(std::string str);
+    extern std::string read(std::string str, std::string bookmark, int bookmark_no);
 
     //a write() function which writes to a give file and a given mode
 

@@ -326,6 +326,57 @@ std::string string_manipulation::read(std::string str)
     return output;
 }
 
+std::string string_manipulation::read(std::string str, std::string bookmark, int bookmark_no)
+{
+    std::string output_check = "";
+    std::string output = "";
+    std::ifstream fout;
+    int bookmark_i = 0; 
+
+    fout.open(str);
+
+    char c = fout.get();
+
+    while_loop:
+    while(fout.good())
+    {
+        output_check += c;
+
+        if(output_check == bookmark)
+            bookmark_i++;
+
+        if(bookmark_i < bookmark_no)
+        {
+            fout.ignore(999999999, '\n');
+            output_check = "";
+        }
+
+        if(bookmark_i == bookmark_no)
+        {
+            c = fout.get();
+            
+            if(c == '\n')
+            {
+                output_check = "";
+                c = fout.get();
+            }
+            else
+                output += c;
+
+            goto while_loop;
+        }
+
+        if(bookmark_i > bookmark_no)
+            break;
+
+        c = fout.get();
+    }
+
+    fout.close();
+
+    return output;
+}
+
 void string_manipulation::write(std::string file, std::string output, std::string mode, bool newline)
 {
     std::ofstream fin;
@@ -372,5 +423,8 @@ int string_manipulation::grep(std::string str, std::string key)
 
 void string_manipulation::clear()
 {
-    delete buffer;
+    if(buffer != nullptr && buffer != NULL)
+        delete buffer;
+    
+    buffer = nullptr;
 }

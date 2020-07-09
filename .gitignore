@@ -6,3 +6,5 @@ obj/Debug/
 test.cpp
 
 autoclicker.exe
+
+.vscode/settings.json

@@ -1,10 +1,10 @@
 #ifndef CLICKERLOGIC_H_
 #define CLICKERLOGIC_H_
 
+#include <iostream>
 #include "strmanip.h"
 #include <windows.h>
 #include <map>
-#include <thread>
 
 class ClickerLogic
 {
@@ -16,7 +16,17 @@ class ClickerLogic
         std::string lastFocusedWindow = "";
         char title[256];
         bool only_once = true;
-        bool setCursorCoordsOnlyOnce = false;
+        static const int max_size = 10000;
+        const int mouse_accuracy = 1000000;
+        const int mouse_record_delay = 5;
+        int mouse_mod_size = 0;
+        POINT mouse_mod[max_size];
+        POINT mouse_load[max_size];
+        POINT mouse_smooth[max_size * 2];
+        int mouse_event_load_left[max_size];
+        int mouse_event_load_right[max_size];
+        int mouse_event_left[max_size];
+        int mouse_event_right[max_size];
         BYTE latest_key = NULL;
         HWND hwnd = NULL;
         RECT rect;
@@ -44,6 +54,9 @@ class ClickerLogic
         //The base functions
         void read_configs();
         void app();
+        void refocus();
+        void save_preset_recording();
+        void smoothing(std::string mode);
         void app_preset_load();
         void app_preset_unload();
         void app_preset_play();
