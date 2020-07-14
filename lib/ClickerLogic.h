@@ -22,7 +22,7 @@ class ClickerLogic
         int mouse_mod_size = 0;
         POINT mouse_mod[max_size];
         POINT mouse_load[max_size];
-        POINT mouse_smooth[max_size * 2];
+        POINT mouse_smooth[max_size];
         int mouse_event_load_left[max_size];
         int mouse_event_load_right[max_size];
         int mouse_event_left[max_size];
@@ -54,6 +54,7 @@ class ClickerLogic
         //The base functions
         void read_configs();
         void app();
+        int check_for_next_bookmark(int i);
         void refocus();
         void save_preset_recording();
         void smoothing(std::string mode);

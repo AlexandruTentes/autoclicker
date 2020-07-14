@@ -195,7 +195,7 @@ namespace string_manipulation
     //
 
     extern std::string read(std::string str);
-    extern std::string read(std::string str, std::string bookmark, int bookmark_no);
+    extern std::string read(std::string str, std::string bookmark, int bookmark_no, char eof);
 
     //a write() function which writes to a give file and a given mode
 

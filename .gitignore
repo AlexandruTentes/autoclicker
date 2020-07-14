@@ -12,3 +12,7 @@ autoclicker.exe
 log
 
 preset/load
+
+lib/exceptmacro.h
+
+lib/tezt.cpp
